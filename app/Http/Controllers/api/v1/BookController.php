@@ -2,36 +2,37 @@
 
 namespace App\Http\Controllers\api\v1;
 
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookRequest;
-use App\Http\Resources\BookResource;
-use App\Models\Book;
-use App\Traits\ApiResponder;
-use Illuminate\Http\Request;
+use App\Interfaces\BookInterface;
 
 class BookController extends Controller
 {
-    Use ApiResponder;
+    protected $bookInterface;
+
+    public function __construct(BookInterface $bookInterface)
+    {
+        $this->bookInterface = $bookInterface;
+    }
 
     public function index()
     {
-        return $this->success(BookResource::collection(Book::all()));
+        return $this->bookInterface->getAllBooks();
     }
 
     public function store(BookRequest $request)
     {
-        //Validation
-        $data = $request->validated();
-
-        //Save to Database
-        $book = Book::create($data);
-
-        //Return Response
-        return $this->success($book, 'Book successfully saved.');
+        return $this->bookInterface->storeBook($request);
     }
 
     public function show($id)
     {
-        return $this->success(new BookResource(Book::findorfail($id)));
+        return $this->bookInterface->getBookById($id);
+    }
+
+    public function destroy($id)
+    {
+        return $this->bookInterface->deleteBook($id);
     }
 }
